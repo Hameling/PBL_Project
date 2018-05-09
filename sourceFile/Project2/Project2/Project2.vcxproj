@@ -120,9 +120,6 @@
   <ItemGroup>
     <ClCompile Include="project2.c" />
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="tag_ID_position.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
