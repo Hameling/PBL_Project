@@ -2,7 +2,6 @@
 #include<stdlib.h>
 #include<string.h>
 #include"tag_ID_position.h"
-#define TD 0
 #pragma warning(disable:4996)
 
 //RFID 태그 정보를 저장하기 위한 구조체
@@ -29,16 +28,16 @@ typedef struct sortedList {
 //TAGINFO *data_set[61];		//이걸 전역변수로 할지 아니면 헤더에 넣을지 고민각 아니면
 
 void initList(TAGINFO *list);									//연결리스트 초기화
-void inserstList(TAGINFO **list, TAGINFO *input, int p);		//연결리스트와 구조체 입력받아서 저장
-void readFile(TAGINFO *list[], SORTEDLIST *sorted);				//파일을 읽어오는 함수 (tagList, referList, sortList) 함수 내부에서 insertList 호출
-void referTagAnalysis(TAGINFO *list[]);							//레퍼런스 태그 분석 기능
-void targetTagAnalysis();								//타겟 태그 분석 기능	taginfo 구조체 활용?
+void inserstList(LIST **list, TAGINFO *input, int p);		//연결리스트와 구조체 입력받아서 저장
+void readFile(LIST *list[], SORTEDLIST *sorted);				//파일을 읽어오는 함수 (tagList, referList, sortList) 함수 내부에서 insertList 호출
+void referTagAnalysis(LIST *list[]);							//레퍼런스 태그 분석 기능
+void targetTagAnalysis(LIST *list[]);								//타겟 태그 분석 기능	taginfo 구조체 활용?
 void defineTagetPos();									//타겟 위치 추론
 void printInfo();										//태그내용 출력
 
 int main() {
 	char input;
-	TAGINFO *data_set[61] = { NULL };
+	LIST *data_set[61] = { NULL };
 	SORTEDLIST *s_list = NULL;
 
 
@@ -60,9 +59,11 @@ int main() {
 
 		if (input == 'A') {
 			printf("  A. Reference Tag Analysis\n");
+			referTagAnalysis(data_set);
 		}
 		else if (input == 'B') {
 			printf("  B. Target Tag Analysis\n");
+			targetTagAnalysis(data_set);
 		}
 		else if (input == 'C') {
 			printf("  C. Estimation of Target Position\n");
@@ -87,19 +88,22 @@ void initList(TAGINFO *list) {
 	list->next = NULL;
 }
 
-void inserstList(TAGINFO **list, TAGINFO *input, int p) {
+void inserstList(LIST **list, TAGINFO *input, int p) {
 	//printf("%p\n", input);
-	if (list[p] == NULL)
-		list[p]= input;
+	if (list[p]== NULL) {
+		list[p] = (LIST*)malloc(sizeof(LIST));
+		list[p]->first = input;
+		list[p]->end = list[p]->first;
+	}
 	else {
-		list[p]->next = input;
-		list[p] = input;
+		list[p]->end->next = input;
+		list[p]->end = input;
 	}
 	//printf("%p\n", list[p]);
 }
 
 
-void readFile(TAGINFO *list[], SORTEDLIST *sorted) {
+void readFile(LIST *list[], SORTEDLIST *sorted) {
 
 	TAGINFO *temp_data;
 	char readData[150];
@@ -175,15 +179,52 @@ void readFile(TAGINFO *list[], SORTEDLIST *sorted) {
 	fclose(RFID_DATA);
 }
 
-void referTagAnalysis(TAGINFO *list[]) {
+void referTagAnalysis(LIST *list[]) {
+	TAGINFO *temp = list[19]->first;
+	double avg_rssi = 0, avg_time = 0;
+	int count = 0;
 	int i;
-	/*for (i = 0; i < 61; i++) {
+
+	for (i = 1; i <= 60; i++) {
 		
-	}*/
-	if (list[TD] != NULL) {
-		while (list[TD] != NULL) {
-			printf("%s\n%f\n%f\n", list[TD]->id, list[TD]->rssi, list[TD]->identifiedTime);
-			list[TD]= list[TD]->next;
+		if (list[i]->first != NULL) {
+			temp = list[i]->first;
+			printf("Tag_ID : %s\n", temp->id);
+			avg_rssi = 0; avg_time = 0;
+			count = 0;
+			while (temp != NULL) {
+				//printf("%s\n%f\n%f\n", temp->id, temp->rssi, temp->identifiedTime);
+				avg_rssi += temp->rssi;
+				avg_time += temp->identifiedTime - list[0]->first->identifiedTime;
+				temp = temp->next;
+				count++;
+			}
+			avg_rssi = avg_rssi / (double)count;
+			avg_time = avg_time / (double)count;
+			printf("Reference Tag\nRssi 평균 : %.3f\nTIme 평균 : %.3f\n", avg_rssi, avg_time);
 		}
+		else {
+			printf("해당 태그 데이터가 없습니다.\n");
+		}
+		printf("\n");
 	}
+}
+
+void targetTagAnalysis(LIST *list[]) {
+	TAGINFO *temp = list[0]->first;
+	int count = 0;
+	double avg_rssi = 0, avg_time = 0;
+	if (temp != NULL) {
+		while (temp != NULL) {
+			//printf("%s\n%f\n%f\n", temp->id, temp->rssi, temp->identifiedTime);
+			avg_rssi += temp->rssi;
+			avg_time += temp->identifiedTime - list[0]->first->identifiedTime;
+			temp = temp->next;
+			count++;
+		}
+		avg_rssi = avg_rssi / (double)count;
+		avg_time = avg_time / (double)count;
+		printf("Target Tag\nRssi 평균 : %.3f\nTIme 평균 : %.3f\n", avg_rssi, avg_time);
+	}
+
 }
