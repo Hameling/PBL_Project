@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include<math.h>
+#include<Windows.h>
 #include"tag_ID_position.h"
 #pragma warning(disable:4996)
 
@@ -13,6 +14,7 @@ typedef struct taginfo {
 	struct taginfo *next;
 }TAGINFO;
 
+//RFID 태그 정보의 활용을 위해 연결리스트의 처음과 끝을 저장하기 위한 구조체
 typedef struct List {
 	 TAGINFO *first, *end;
 }LIST;
@@ -22,23 +24,23 @@ typedef struct sortedList {
 	char id[27];
 	int pos[2];
 	float rssi;
-	//struct sortedList *next;
 	struct sortedList *previous, *next;
 }SORTEDLIST;
 
+//정렬된 구조체의 활용을 위해 연결리스트의 처음과 끝을 저장하는 구조체
 typedef struct S_List {
 	SORTEDLIST *first, *end;
 }S_LIST;
 
 
-void initList(TAGINFO *list);									//연결리스트 초기화
-void insertList(LIST **list, TAGINFO *input, int p);			//연결리스트와 구조체 입력받아서 저장
-S_LIST* insertSortList(S_LIST *list, TAGINFO *input, int p);				//
-S_LIST* readFile(LIST *list[], S_LIST *sorted);					//파일을 읽어오는 함수 (tagList, referList, sortList) 함수 내부에서 insertList 호출
-int referTagAnalysis(LIST *list[]);							//레퍼런스 태그 분석 기능
-double targetTagAnalysis(LIST *list[]);							//타겟 태그 분석 기능
-void defineTagetPos(S_LIST *list, double avg_rssi, int rf_count);								//타겟 위치 추론
-void printInfo();												//태그내용 출력
+void initList(TAGINFO *list);											//TagInfo 연결리스트 초기화
+void insertList(LIST **list, TAGINFO *input, int p);					//TagInfo 연결리스트에 정보를 저장하기 위한 함수
+S_LIST* insertSortList(S_LIST *list, TAGINFO *input, int p);			//SortedList 연결리스트에 정보를 저장하기 위한 함수
+S_LIST* readFile(LIST *list[], S_LIST *sorted);							//파일을 읽어오는 함수 
+int referTagAnalysis(LIST *list[]);										//Reference Tag 분석 및 데이터 출력 기능
+double targetTagAnalysis(LIST *list[]);									//Target Tag 분석 및 데이터 출력 기능
+void defineTagetPos(S_LIST *list, double avg_rssi, int rf_count);		//Referenence Tag의 RSSI값을 바탕으로 Target Tag의 위치를 추론하는 기능
+void printInfo();														//태그내용 출력
 void printS(S_LIST *list);//test용
 
 int main() {
@@ -62,7 +64,8 @@ int main() {
 	printf("  B. Target Tag Analysis\n");
 	printf("  C. Estimation of Target Position\n");
 	printf("  D. Quit\n");
-
+	printf("=============================================================\n");
+	
 	while (1) {
 		printf(">>");
 		scanf("%c", &input);
@@ -240,7 +243,6 @@ S_LIST* readFile(LIST *list[], S_LIST *sorted) {
 		}
 		
 	}
-	
 	//printS(sorted);
 	fclose(RFID_DATA);
 	return sorted;
@@ -254,6 +256,7 @@ int referTagAnalysis(LIST *list[]) {
 	int i;
 
 	for (i = 1; i <= 60; i++) {
+		printf("===================================================\n");
 		printf("Tag_ID : %s\n", referenceIDs[i - 1]);
 		if (list[i] != NULL) {
 			temp = list[i]->first;
@@ -275,6 +278,8 @@ int referTagAnalysis(LIST *list[]) {
 		else {
 			printf("해당 태그 데이터가 없습니다.\n");
 		}
+
+		printf("===================================================\n");
 		printf("\n");
 	}
 	return f_count;
@@ -294,16 +299,20 @@ double targetTagAnalysis(LIST *list[]) {
 		}
 		avg_rssi = avg_rssi / (double)count;
 		avg_time = avg_time / (double)count;
+
+		printf("===================================================\n");
 		printf("Target Tag\nTag_ID : %s\nRssi 평균 : %.3f\nTIme 평균 : %.3f\n",list[0]->first->id, avg_rssi, avg_time);
+		printf("===================================================\n");
+		printf("\n");
 	}
 	return avg_rssi;
 }
 
 void defineTagetPos(S_LIST *list,double avg_rssi, int rf_count) {
 	int k , i;
-	double sum_data1 = 1.0, sum_data2 = 0.0;
-	S_LIST *head = list;
-	SORTEDLIST *temp = head->first;
+	double sum_data1 = 0.0, sum_data2 = 0.0;
+	S_LIST head = *list;
+	SORTEDLIST *temp = head.first;
 	SORTEDLIST *search_set;
 	//printS(list);
 	while (1) {
@@ -320,74 +329,43 @@ void defineTagetPos(S_LIST *list,double avg_rssi, int rf_count) {
 	}
 	search_set = (SORTEDLIST*)malloc(sizeof(SORTEDLIST)*k);
 	
-	while (sum_data1 >= sum_data2) {
+	do {
 		sum_data1 = 0.0;
 		sum_data2 = 0.0;
-		temp = head->first;
+		temp = head.first;
 		for (i = 0; i < k; i++) {
 			search_set[i] = *temp;
 			temp = temp->next;
-			printf("%.3f\n", search_set[i].rssi);
+			printf("%.3f\n", search_set[i].rssi);//테스트
 			sum_data1 += fabs(search_set[i].rssi - avg_rssi);
 		}
-		printf("A합 : %.3f\n", sum_data1);
+		printf("A합 : %.3f\n", sum_data1);//테스트
 		
-		head->first = head->first->next;
-		temp = head->first;
-		//temp = temp->next;
+		head.first = head.first->next;
+		temp = head.first;
 		for (i = 0; i < k; i++) {
 			search_set[i] = *temp;
 			temp = temp->next;
-			printf("%.3f\n", search_set[i].rssi);
 			sum_data2 += fabs(search_set[i].rssi - avg_rssi);
 		}
-		printf("B합 : %.3f\n", sum_data2);
-
-		
-		//head->first = head->first->next;
-	}
-	free(search_set);
-
-	/*for (i = 0; i < k; i++) {
-		search_set[i] = *temp;
-		temp = temp->next;
-		printf("%.3f\n", search_set[i].rssi);
-		sum_data1 += fabs(search_set[i].rssi - avg_rssi);
-	}
-	printf("합 : %.3f\n", sum_data1);
-
-	temp = head->first;
-	temp = temp->next;
-	for (i = 0; i < k; i++) {
-		search_set[i] = *temp;
-		temp = temp->next;
-		printf("%.3f\n", search_set[i].rssi);
-		sum_data2 += fabs(search_set[i].rssi - avg_rssi);
-	}
-	printf("합 : %.3f\n", sum_data2);
-
-	sum_data1 = 0.0;
+	} while (sum_data1 >= sum_data2);
+	
+	//테스트
 	sum_data2 = 0.0;
-	head->first = head->first->next;
-
-	temp = head->first;
+	temp = head.first;
+	temp = temp->previous;
 	for (i = 0; i < k; i++) {
 		search_set[i] = *temp;
 		temp = temp->next;
-		printf("%.3f\n", search_set[i].rssi);
-		sum_data1 += fabs(search_set[i].rssi - avg_rssi);
-	}
-	printf("합 : %.3f\n", sum_data1);
-
-	temp = head->first;
-	temp = temp->next;
-	for (i = 0; i < k; i++) {
-		search_set[i] = *temp;
-		temp = temp->next;
-		printf("%.3f\n", search_set[i].rssi);
+		printf("RSSI : %.3f\nfPos :  (%d,%d)\n", search_set[i].rssi, search_set[i].pos[0],search_set[i].pos[1]);
 		sum_data2 += fabs(search_set[i].rssi - avg_rssi);
 	}
-	printf("합 : %.3f\n", sum_data2);*/
+	printf("최종합 : %.3f\n", sum_data2);
+
+
+
+
+	free(search_set);
 }
 
 void printS(S_LIST *list) {
