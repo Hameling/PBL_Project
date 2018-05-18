@@ -313,6 +313,13 @@ void defineTagetPos(S_LIST *list,double avg_rssi, int rf_count) {
 	search_set = (SORTEDLIST*)malloc(sizeof(SORTEDLIST)*k);
 	w = (double*)malloc(sizeof(double)*k);
 
+	temp = head.first;
+	while (temp->next != NULL) {
+		printf("RSSI 차이값 : %.3f\n", fabs(temp->rssi - avg_rssi));
+		temp = temp->next;
+	}
+
+
 	do {
 		sum_data1 = 0.0;
 		sum_data2 = 0.0;
@@ -337,7 +344,7 @@ void defineTagetPos(S_LIST *list,double avg_rssi, int rf_count) {
 	for (i = 0; i < k; i++) {
 		search_set[i] = *temp;
 		temp = temp->next;
-		printf("RSSI차이 : %.3f\nPos :  (%d,%d)\n", fabs(avg_rssi - search_set[i].rssi), search_set[i].pos[0],search_set[i].pos[1]);
+		printf("Tag_ID : %s\nRSSI차이 : %.3f\nPos :  (%d,%d)\n", search_set[i].id,fabs(avg_rssi - search_set[i].rssi), search_set[i].pos[0],search_set[i].pos[1]);
 	}
 	
 
