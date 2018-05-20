@@ -1,0 +1,71 @@
+#include<Windows.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<math.h>
+#include<string.h>
+#pragma warning(disable:4996)
+
+
+int main() {
+	HWND hwnd;
+	HDC hdc;
+	int degree, x, y;
+	double radin, result;
+	double pi = 3.14;
+	int a  = 10;
+	char s[20] = "aasdfasfasf";
+	char *temp;
+	temp = itoa(a, s, 10);
+	itoa(a, temp, 10);
+	LPCSTR str = "";
+
+	hwnd = GetConsoleWindow();
+	hdc = GetWindowDC(hwnd);
+	//SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+	//MessageBox(NULL, "hi", "윈도우창", MB_OK);
+	/*MoveToEx(hdc, 0, 200, 0);
+	LineTo(hdc, 400, 200);
+	MoveToEx(hdc, 30, 350, 0);
+	LineTo(hdc, 30, 0);*/
+	//sprintf(str, "(%s)", s);
+	
+	//TextOutA(hdc, 100, 200, (LPCSTR)s, strlen(s));
+	hwnd = CreateWindow(
+		"Window Class Name",
+		"Window Title Name",
+		WS_OVERLAPPEDWINDOW,
+		100,
+		100,500,500,
+		NULL,
+		NULL,
+		NULL, NULL
+	);
+	hdc = GetWindowDC(hwnd);
+	ShowWindow(hwnd, SW_SHOW);
+	TextOutA(hdc, 200, 200, "(20,20)", 9);
+	TextOutA(hdc, 100, 100, "(10,10)", 7);
+	TextOutA(hdc, 200, 100, "(20,10)", 9);
+	
+	RoundRect(hdc,200, 200, 400, 400, 100, 100);
+
+	SetPixel(hdc, 190, 100, RGB(255, 255, 255));
+
+	for (int i = 0; i <= 360; i++) {
+		SetPixel(hdc, 20, i, RGB(255, 255, 255));
+	}
+	for (int i = 0; i <= 360; i++) {
+		SetPixel(hdc, i, 250, RGB(255, 255, 255));
+	}
+
+
+	for (degree = 0; degree <= 360; degree++) {
+		result = sin(3.14*(double)degree/180.0);
+		x = degree + 30;
+		y = 200 - (int)(100.0*result);
+		SetPixel(hdc, x, y, RGB(255, 255, 255));
+	}
+
+	UpdateWindow(hdc);
+
+	return 0;
+}
