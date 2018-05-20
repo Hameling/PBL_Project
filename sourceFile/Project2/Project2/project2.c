@@ -35,6 +35,7 @@ typedef struct S_List {
 void initList(TAGINFO *list);											//TagInfo 연결리스트 초기화
 void insertList(LIST **list, TAGINFO *input, int p);					//TagInfo 연결리스트에 정보를 저장하기 위한 함수
 S_LIST* insertSortList(S_LIST *list, float rssi, int p);				//SortedList 연결리스트에 정보를 저장하기 위한 함수
+void initMenu();														//메뉴 선택화면 출력을 위한 함수 
 void readFile(LIST *list[]);											//파일을 읽어오는 함수 
 int referTagAnalysis(LIST *list[], S_LIST **sorted, int flag);					//Reference Tag 분석 및 데이터 출력 기능
 double targetTagAnalysis(LIST *list[]);									//Target Tag 분석 및 데이터 출력 기능
@@ -54,16 +55,8 @@ int main() {
 	avg_rssi = targetTagAnalysis(data_set);
 	system("cls");
 	
+	initMenu();
 
-	printf("=============================================================\n");
-	printf("   RFID Tag Information Analysis based Localization System\n");
-	printf("=============================================================\n");
-	printf("  A. Reference Tag Analysis\n");
-	printf("  B. Target Tag Analysis\n");
-	printf("  C. Estimation of Target Position\n");
-	printf("  D. Quit\n");
-	printf("=============================================================\n");
-	
 	while (1) {
 		printf(">>");
 		scanf("%c", &input);
@@ -89,7 +82,9 @@ int main() {
 			break;
 		}
 		while (getchar() != '\n');
-
+		system("pause");
+		system("cls");
+		initMenu();
 	}
 	printf("프로그램이 정상 종료되었습니다.\n");
 	return 0;
@@ -230,6 +225,17 @@ void readFile(LIST *list[]) {
 	fclose(RFID_DATA);
 }
 
+void initMenu() {
+	printf("=============================================================\n");
+	printf("   RFID Tag Information Analysis based Localization System\n");
+	printf("=============================================================\n");
+	printf("  A. Reference Tag Analysis\n");
+	printf("  B. Target Tag Analysis\n");
+	printf("  C. Estimation of Target Position\n");
+	printf("  D. Quit\n");
+	printf("=============================================================\n");
+}
+
 int referTagAnalysis(LIST *list[], S_LIST **sorted, int flag) {
 
 	TAGINFO *temp;
@@ -321,7 +327,6 @@ void defineTagetPos(S_LIST *list,double avg_rssi, int rf_count) {
 		temp = temp->next;
 	}
 
-
 	do {
 		sum_data1 = 0.0;
 		sum_data2 = 0.0;
@@ -374,29 +379,30 @@ void printInfo(SORTEDLIST list[], int size, int t_x, int t_y) {
 	HWND hwnd;
 	HDC hdc;
 	int i;
-	char temp_x[5] = "", temp_y[5] = "";
 	char temp_pos[20] = "";
 	hwnd = GetForegroundWindow();
 	hdc = GetWindowDC(hwnd);
 	
-	//TextOutA(hdc, 200, 100, "(20,10)", 9);
-	for (i = 0; i < size; i++) {
-		//fprintf(temp, "(%d,%d)", list[i].pos[0], list[i].pos[1]);
-		itoa(list[i].pos[0],temp_x,10);
-		itoa(list[i].pos[1], temp_y, 10);
-		strcpy(temp_pos, temp_x);
-		strcat(temp_pos, temp_y);
-
-		TextOutA(hdc, list[i].pos[0] * 10 + 50, ((list[i].pos[1] * 10) - 10), temp_pos, strlen(temp_pos));
-		SetPixel(hdc, list[i].pos[0] * 10 + 50, list[i].pos[1] * 10, RGB(255, 255, 255));
-		strcpy(temp_pos, "");
-		strcpy(temp_x, "");
-		strcpy(temp_y, "");
-
-		UpdateWindow(hdc);
+	system("cls");
+	printf("=============================================================\n");
+	for (i = 0; i < 15; i++) {
+		printf("\n");
 	}
+	printf("=============================================================\n");
 	
+	for (i = 0; i < size; i++) {
+		sprintf(temp_pos, "(%d,%d)", list[i].pos[0], list[i].pos[1]);
+		printf("%s\n", temp_pos);
 
-	UpdateWindow(hdc);
+		//TextOutA(hdc, list[i].pos[0], list[i].pos[1], temp_pos, strlen(temp_pos));
+		//SetPixel(hdc, list[i].pos[0], list[i].pos[1], RGB(255, 255, 255));
+		Ellipse(hdc,list[i].pos[0]+17, list[i].pos[1]+20, list[i].pos[0]+27, list[i].pos[1]+30);
+		strcpy(temp_pos, "");
+	}
+	sprintf(temp_pos, "(%d,%d)", t_x, t_y);
+	//TextOutA(hdc, t_x, t_y, temp_pos, strlen(temp_pos));
+	//SetPixel(hdc, t_x, t_y, RGB(255, 255, 255));
+	Rectangle(hdc, t_x + 17, t_y + 20, t_x + 27, t_y + 30);
+
 
 }
