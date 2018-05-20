@@ -39,7 +39,7 @@ void readFile(LIST *list[]);											//파일을 읽어오는 함수
 int referTagAnalysis(LIST *list[], S_LIST **sorted, int flag);					//Reference Tag 분석 및 데이터 출력 기능
 double targetTagAnalysis(LIST *list[]);									//Target Tag 분석 및 데이터 출력 기능
 void defineTagetPos(S_LIST *list, double avg_rssi, int rf_count);						//Referenence Tag의 RSSI값을 바탕으로 Target Tag의 위치를 추론하는 기능
-void printInfo();														//태그내용 출력
+void printInfo(SORTEDLIST list[], int size, int t_x, int t_y);												//태그내용 출력
 
 int main() {
 	char input;
@@ -48,10 +48,12 @@ int main() {
 	double avg_rssi;
 	int rf_count;
 
+
 	readFile(data_set);
 	rf_count = referTagAnalysis(data_set, &s_list,0);
 	avg_rssi = targetTagAnalysis(data_set);
 	system("cls");
+	
 
 	printf("=============================================================\n");
 	printf("   RFID Tag Information Analysis based Localization System\n");
@@ -315,7 +317,7 @@ void defineTagetPos(S_LIST *list,double avg_rssi, int rf_count) {
 
 	temp = head.first;
 	while (temp->next != NULL) {
-		printf("RSSI 차이값 : %.3f\n", fabs(temp->rssi - avg_rssi));
+		//printf("RSSI 차이값 : %.3f\n", fabs(temp->rssi - avg_rssi));
 		temp = temp->next;
 	}
 
@@ -344,7 +346,7 @@ void defineTagetPos(S_LIST *list,double avg_rssi, int rf_count) {
 	for (i = 0; i < k; i++) {
 		search_set[i] = *temp;
 		temp = temp->next;
-		printf("Tag_ID : %s\nRSSI차이 : %.3f\nPos :  (%d,%d)\n", search_set[i].id,fabs(avg_rssi - search_set[i].rssi), search_set[i].pos[0],search_set[i].pos[1]);
+		//printf("Tag_ID : %s\nRSSI차이 : %.3f\nPos :  (%d,%d)\n", search_set[i].id,fabs(avg_rssi - search_set[i].rssi), search_set[i].pos[0],search_set[i].pos[1]);
 	}
 	
 
@@ -353,9 +355,9 @@ void defineTagetPos(S_LIST *list,double avg_rssi, int rf_count) {
 		w_sum += w[i];
 	}
 
-	for (i = 0; i < k; i++) {
+	/*for (i = 0; i < k; i++) {
 		printf("%d번쨰 실가중치 : %.3f\n", i + 1, (w[i] /  w_sum));
-	}
+	}*/
 
 	for (i = 0; i < k; i++) {
 		x += (w[i] / w_sum) * (double)search_set[i].pos[0];
@@ -363,5 +365,38 @@ void defineTagetPos(S_LIST *list,double avg_rssi, int rf_count) {
 	}
 	printf("X : %.3f\nY : %.3f\n", x, y);
 	
+	printInfo(search_set, k, (int)x, (int)y);
+
 	free(search_set);
+}
+
+void printInfo(SORTEDLIST list[], int size, int t_x, int t_y) {
+	HWND hwnd;
+	HDC hdc;
+	int i;
+	char temp_x[5] = "", temp_y[5] = "";
+	char temp_pos[20] = "";
+	hwnd = GetForegroundWindow();
+	hdc = GetWindowDC(hwnd);
+	
+	//TextOutA(hdc, 200, 100, "(20,10)", 9);
+	for (i = 0; i < size; i++) {
+		//fprintf(temp, "(%d,%d)", list[i].pos[0], list[i].pos[1]);
+		itoa(list[i].pos[0],temp_x,10);
+		itoa(list[i].pos[1], temp_y, 10);
+		strcpy(temp_pos, temp_x);
+		strcat(temp_pos, temp_y);
+
+		TextOutA(hdc, list[i].pos[0] * 10 + 50, ((list[i].pos[1] * 10) - 10), temp_pos, strlen(temp_pos));
+		SetPixel(hdc, list[i].pos[0] * 10 + 50, list[i].pos[1] * 10, RGB(255, 255, 255));
+		strcpy(temp_pos, "");
+		strcpy(temp_x, "");
+		strcpy(temp_y, "");
+
+		UpdateWindow(hdc);
+	}
+	
+
+	UpdateWindow(hdc);
+
 }
