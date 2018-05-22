@@ -383,18 +383,18 @@ void printInfo(SORTEDLIST list[], int size, int t_x, int t_y) {
 	hwnd = GetForegroundWindow();
 	hdc = GetWindowDC(hwnd);
 	
-	system("cls");
+	/*system("cls");
 	printf("=============================================================\n");
 	for (i = 0; i < 15; i++) {
 		printf("\n");
 	}
 	printf("=============================================================\n");
-	
+	*/
 	for (i = 0; i < size; i++) {
 		sprintf(temp_pos, "(%d,%d)", list[i].pos[0], list[i].pos[1]);
 		printf("%s\n", temp_pos);
 
-		//TextOutA(hdc, list[i].pos[0], list[i].pos[1], temp_pos, strlen(temp_pos));
+		TextOutA(hdc, list[i].pos[0], list[i].pos[1], temp_pos, strlen(temp_pos));
 		//SetPixel(hdc, list[i].pos[0], list[i].pos[1], RGB(255, 255, 255));
 		Ellipse(hdc,list[i].pos[0]+17, list[i].pos[1]+20, list[i].pos[0]+27, list[i].pos[1]+30);
 		strcpy(temp_pos, "");
