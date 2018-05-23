@@ -2,7 +2,6 @@
 #include<stdlib.h>
 #include<string.h>
 #include<math.h>
-#include<Windows.h>
 #include"tag_ID_position.h"
 #pragma warning(disable:4996)
 
@@ -32,15 +31,17 @@ typedef struct S_List {
 	SORTEDLIST *first, *end;
 }S_LIST;
 
-void initList(TAGINFO *list);											//TagInfo 연결리스트 초기화
+void initList(TAGINFO *list);											//TagInfo 연결리스트 초기화를 위한 함수
 void insertList(LIST **list, TAGINFO *input, int p);					//TagInfo 연결리스트에 정보를 저장하기 위한 함수
-S_LIST* insertSortList(S_LIST *list, float rssi, int p);				//SortedList 연결리스트에 정보를 저장하기 위한 함수
-void initMenu();														//메뉴 선택화면 출력을 위한 함수 
-void readFile(LIST *list[]);											//파일을 읽어오는 함수 
-int referTagAnalysis(LIST *list[], S_LIST **sorted, int flag);					//Reference Tag 분석 및 데이터 출력 기능
+S_LIST* insertSortList(S_LIST *list, float rssi, int p);				//SortedList 연결리스트에 정보를 오름차순으로 저장하기 위한 함수
+
+void initMenu();														//메뉴 선택화면을 출력하기 위한 함수 
+void readFile(LIST *list[]);											//파일을 읽어와 각 태그의 정보값을 연결리스트에 저장하는 함수
+
+int referTagAnalysis(LIST *list[], S_LIST **sorted, int flag);			//Reference Tag 분석 및 데이터 출력 기능
 double targetTagAnalysis(LIST *list[]);									//Target Tag 분석 및 데이터 출력 기능
-void defineTagetPos(S_LIST *list, double avg_rssi, int rf_count);						//Referenence Tag의 RSSI값을 바탕으로 Target Tag의 위치를 추론하는 기능
-void printInfo(SORTEDLIST list[], int size, int t_x, int t_y);												//태그내용 출력
+void defineTagetPos(S_LIST *list, double avg_rssi, int rf_count);		//Referenence Tag의 RSSI값을 바탕으로 Target Tag의 위치를 추론하는 기능
+void printInfo(SORTEDLIST list[], int size, int t_x, int t_y);			//태그 위치정보 출력
 
 int main() {
 	char input;
@@ -49,14 +50,12 @@ int main() {
 	double avg_rssi;
 	int rf_count;
 
-
 	readFile(data_set);
 	rf_count = referTagAnalysis(data_set, &s_list,0);
 	avg_rssi = targetTagAnalysis(data_set);
 	system("cls");
 	
 	initMenu();
-
 	while (1) {
 		printf(">>");
 		scanf("%c", &input);
@@ -64,6 +63,8 @@ int main() {
 		if (input != 'A' && input != 'B' && input != 'C' && input != 'D') {
 			printf("Unknown Input\n");
 			printf("Please Select the A to D\n");
+			while (getchar() != '\n');
+			continue;
 
 		}else if (input == 'A') {
 			printf("A. Reference Tag Analysis\n");
@@ -90,6 +91,7 @@ int main() {
 	return 0;
 }
 
+//TagInfo 연결리스트 초기화를 위한 함수
 void initList(TAGINFO *list) {
 	strcpy(list->id, "");
 	list->rssi = 0.0;
@@ -97,6 +99,7 @@ void initList(TAGINFO *list) {
 	list->next = NULL;
 }
 
+//TagInfo 연결리스트에 정보를 저장하기 위한 함수
 void insertList(LIST **list, TAGINFO *input, int p) {
 	if (list[p]== NULL) {
 		list[p] = (LIST*)malloc(sizeof(LIST));
@@ -109,6 +112,8 @@ void insertList(LIST **list, TAGINFO *input, int p) {
 	}
 }
 
+//SortedList 연결리스트에 정보를 오름차순으로 저장하기 위한 함수
+//이중연결리스트로 구성된 SortedList를 초기화 및 정렬된 상태로 저장
 S_LIST* insertSortList(S_LIST *list, float rssi, int p) {
 	SORTEDLIST *head;
 	int flag = 0;
@@ -160,12 +165,24 @@ S_LIST* insertSortList(S_LIST *list, float rssi, int p) {
 	return list;
 }
 
-void readFile(LIST *list[]) {
+//메뉴 선택화면을 출력하기 위한 함수
+void initMenu() {
+	printf("=============================================================\n");
+	printf("   RFID Tag Information Analysis based Localization System\n");
+	printf("=============================================================\n");
+	printf("  A. Reference Tag Analysis\n");
+	printf("  B. Target Tag Analysis\n");
+	printf("  C. Estimation of Target Position\n");
+	printf("  D. Quit\n");
+	printf("=============================================================\n");
+}
 
+//파일을 읽어와 각 태그의 정보값을 연결리스트에 저장하는 함수
+//파일을 데이터를 한줄 씩 읽어와 연결리스트에 필요한 정보를 저장
+void readFile(LIST *list[]) {
 	TAGINFO *temp_data;
 	char readData[150];
 	char *pos, *pos2;
-
 	char tag_id[27];
 	char rssi[5] = "";
 	char time[13];
@@ -175,10 +192,8 @@ void readFile(LIST *list[]) {
 
 	FILE *RFID_DATA = fopen("RFID_Data.txt", "r");
 
-	
 	if (RFID_DATA != NULL) {
 		while (!feof(RFID_DATA)) {
-
 			temp_data = (TAGINFO*)malloc(sizeof(TAGINFO));
 			initList(temp_data);
 
@@ -220,22 +235,14 @@ void readFile(LIST *list[]) {
 			}
 			strcpy(rssi, "    ");
 		}
-		
 	}
 	fclose(RFID_DATA);
 }
 
-void initMenu() {
-	printf("=============================================================\n");
-	printf("   RFID Tag Information Analysis based Localization System\n");
-	printf("=============================================================\n");
-	printf("  A. Reference Tag Analysis\n");
-	printf("  B. Target Tag Analysis\n");
-	printf("  C. Estimation of Target Position\n");
-	printf("  D. Quit\n");
-	printf("=============================================================\n");
-}
-
+//Reference Tag 분석 및 데이터 출력 기능
+//각 Reference Tag의 RSSI 평균값과 시간 평균값, Tag_ID를 출력함
+//그와 동시에 SortedList에 읽혀온 Reference Tag의 데이터를 저장함
+//최종적으로 데이터가 1번이라도 읽힌 Reference Tag의 갯수를 반환함
 int referTagAnalysis(LIST *list[], S_LIST **sorted, int flag) {
 
 	TAGINFO *temp;
@@ -244,7 +251,7 @@ int referTagAnalysis(LIST *list[], S_LIST **sorted, int flag) {
 	int i;
 
 	for (i = 1; i <= 60; i++) {
-		printf("===================================================\n");
+		printf("===================================\n");
 		printf("Tag_ID : %s\n", referenceIDs[i - 1]);
 		if (list[i] != NULL) {
 			temp = list[i]->first;
@@ -260,20 +267,20 @@ int referTagAnalysis(LIST *list[], S_LIST **sorted, int flag) {
 			avg_time = avg_time / (double)count;
 			printf("Reference Tag\nRssi 평균 : %.3f\nTime 평균 : %.3f\n", avg_rssi, avg_time);
 			if(flag == 0) *sorted = insertSortList(*sorted, avg_rssi, i);
-			
 			rf_count++;
 		}
 		else {
 			printf("해당 태그 데이터가 없습니다.\n");
 		}
-
-		printf("===================================================\n");
+		printf("===================================\n");
 		printf("\n");
-
 	}
 	return rf_count;
 }
 
+//Target Tag 분석 및 데이터 출력 기능
+//Target Tag의 RSSI 평균값과 시간 평균값, Tag_ID를 출력함
+//최종적으로 Target Tag의 평균 RSSI값을 반환함
 double targetTagAnalysis(LIST *list[]) {
 	TAGINFO *temp = list[0]->first;
 	int count = 0;
@@ -287,15 +294,17 @@ double targetTagAnalysis(LIST *list[]) {
 		}
 		avg_rssi = avg_rssi / (double)count;
 		avg_time = avg_time / (double)count;
-
-		printf("===================================================\n");
+		printf("===================================\n");
 		printf("Target Tag\nTag_ID : %s\nRssi 평균 : %.3f\nTIme 평균 : %.3f\n",list[0]->first->id, avg_rssi, avg_time);
-		printf("===================================================\n");
+		printf("===================================\n");
 		printf("\n");
 	}
 	return avg_rssi;
 }
 
+//Referenence Tag의 RSSI값을 바탕으로 Target Tag의 위치를 추론하는 기능
+//SortedList와 미리 읽어둔 데이터들을 바탕으로 Target Tag의 위치 정보를 예측함
+//kNN알고리즘을 이용해 가중치를 감안한 좌표를 계산함
 void defineTagetPos(S_LIST *list,double avg_rssi, int rf_count) {
 	int k , i;
 	double sum_data1 = 0.0, sum_data2 = 0.0;
@@ -304,17 +313,16 @@ void defineTagetPos(S_LIST *list,double avg_rssi, int rf_count) {
 	SORTEDLIST *search_set;
 	double *w, w_sum = 0.0;
 	double x = 0.0, y = 0.0;
-	
-	printf("===================================================\n");
+	printf("===================================\n");
 	while (1) {
-		printf("검색을 희망하는 k값을 입력해주세요 : ");
+		printf("계산을 희망하는 k값을 입력해주세요 : ");
 		scanf("%d", &k);
 
 		if (k > 0 && k < rf_count) {
 			break;
 		}
 		else {
-			printf("->입력값이 범위를 초과하였습니다.\n");
+			printf("->입력값이 k의 범위 안에 없습니다.\n");
 			while (getchar() != '\n');
 		}
 	}
@@ -323,10 +331,8 @@ void defineTagetPos(S_LIST *list,double avg_rssi, int rf_count) {
 
 	temp = head.first;
 	while (temp->next != NULL) {
-		//printf("RSSI 차이값 : %.3f\n", fabs(temp->rssi - avg_rssi));
 		temp = temp->next;
 	}
-
 	do {
 		sum_data1 = 0.0;
 		sum_data2 = 0.0;
@@ -345,64 +351,55 @@ void defineTagetPos(S_LIST *list,double avg_rssi, int rf_count) {
 		}
 	} while (sum_data1 >= sum_data2);
 	
-	//테스트
 	temp = head.first;
 	temp = temp->previous;
 	for (i = 0; i < k; i++) {
 		search_set[i] = *temp;
 		temp = temp->next;
-		//printf("Tag_ID : %s\nRSSI차이 : %.3f\nPos :  (%d,%d)\n", search_set[i].id,fabs(avg_rssi - search_set[i].rssi), search_set[i].pos[0],search_set[i].pos[1]);
 	}
-	
-
+	//kNN알고리즘 시작부
 	for (i = 0; i < k; i++) {
 		w[i] = 1 / pow(fabs(avg_rssi - search_set[i].rssi), 2);
 		w_sum += w[i];
 	}
-
-	/*for (i = 0; i < k; i++) {
-		printf("%d번쨰 실가중치 : %.3f\n", i + 1, (w[i] /  w_sum));
-	}*/
-
 	for (i = 0; i < k; i++) {
 		x += (w[i] / w_sum) * (double)search_set[i].pos[0];
 		y += (w[i] / w_sum) * (double)search_set[i].pos[1];
 	}
-	printf("X : %.3f\nY : %.3f\n", x, y);
-	
+	printf("Target Tag의 위치 : (%.3f, %.3f)\n\n",x,y);
 	printInfo(search_set, k, (int)x, (int)y);
 
 	free(search_set);
 }
-
+//태그 위치정보 출력
+//Target Tag 및 kNN 알고리즘에서 사용된 k개의 Reference Tag의 위치정보를 출력함
 void printInfo(SORTEDLIST list[], int size, int t_x, int t_y) {
-	HWND hwnd;
-	HDC hdc;
-	int i;
-	char temp_pos[20] = "";
-	hwnd = GetForegroundWindow();
-	hdc = GetWindowDC(hwnd);
+	char mark[11][3] = { {"○"},{"●"},{"◇"},{"◆"},{"□"},{"■"},{"♤"},{"♧"},{"♡"},{"◈"} };
+	int field[23][13] = { 0 };
+	int i,j;
 	
-	/*system("cls");
-	printf("=============================================================\n");
-	for (i = 0; i < 15; i++) {
+	printf("Target Tag : ☆\n");
+	for (i = 0; i < size; i++) {
+		field[list[i].pos[0] / 8][list[i].pos[1] / 12] = (i % 10) + 1;
+		printf("%s : (%3d,%3d) RSSI : %.3f\n", mark[field[list[i].pos[0] / 8][list[i].pos[1] / 12] - 1], list[i].pos[0], list[i].pos[1], list[i].rssi);
+	}
+	field[t_x / 8][t_y / 12] = 11;
+	printf("===============================================\n");
+	for (i = 0; i < 13; i++) {
+		for (j = 0; j < 23; j++) {
+			if (field[j][i] != 0) {
+				if (field[j][i] != 11) {
+					printf("%s", mark[field[j][i] - 1]);
+				}
+				else {
+					printf("☆");
+				}
+			}
+			else {
+				printf("  ");
+			}
+		}
 		printf("\n");
 	}
-	printf("=============================================================\n");
-	*/
-	for (i = 0; i < size; i++) {
-		sprintf(temp_pos, "(%d,%d)", list[i].pos[0], list[i].pos[1]);
-		printf("%s\n", temp_pos);
-
-		TextOutA(hdc, list[i].pos[0], list[i].pos[1], temp_pos, strlen(temp_pos));
-		//SetPixel(hdc, list[i].pos[0], list[i].pos[1], RGB(255, 255, 255));
-		Ellipse(hdc,list[i].pos[0]+17, list[i].pos[1]+20, list[i].pos[0]+27, list[i].pos[1]+30);
-		strcpy(temp_pos, "");
-	}
-	sprintf(temp_pos, "(%d,%d)", t_x, t_y);
-	//TextOutA(hdc, t_x, t_y, temp_pos, strlen(temp_pos));
-	//SetPixel(hdc, t_x, t_y, RGB(255, 255, 255));
-	Rectangle(hdc, t_x + 17, t_y + 20, t_x + 27, t_y + 30);
-
-
+	printf("===============================================\n");
 }
