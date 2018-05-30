@@ -1,0 +1,5 @@
+Donald 20
+Mitchell 24
+John 15
+Joyce 30
+Alicia 40

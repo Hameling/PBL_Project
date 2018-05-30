@@ -1,0 +1,17 @@
+02	Seoul
+031	Gyeonggio
+032	Incheon
+033	Gangwon
+041	Chungnam
+042	Daejeon
+043	Chungbuk
+044	Sejong
+051	Busan
+052	Ulsan
+053	Daegu
+054	Gyeongbuk
+055	Gyeongnam
+061	Geonnam
+062	Gwangju
+063	Jeonbuk 
+064	Jeju
