@@ -8,10 +8,13 @@
 using namespace std;
 
 
+
 int main() {
+	
+	char title[10];
+	strcpy(title, readTitle());
 
-
-
+	printf("%s",title);
 
 	return 0;
 }
