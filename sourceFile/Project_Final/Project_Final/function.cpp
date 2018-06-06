@@ -1,5 +1,8 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<Windows.h>
 #include"function.h"
-
 
 
 int fileExist(const char *filename) {
@@ -13,9 +16,12 @@ int fileExist(const char *filename) {
 }
 char* readTitle() {
 	FILE *t_file;
-	char title[10][10];
+	char title[10][20];
 	int count = 0;
 	char select[10];
+	char text[] = "FILE_IS_EMPTY\n";
+
+	if (fileExist(TITLE_FILE) == -1) exit(0);
 
 	t_file = fopen(TITLE_FILE, "r");
 
@@ -32,11 +38,11 @@ char* readTitle() {
 	for (int i = 0; i < count; i++) {
 		if (!strcmp(title[i], select)) return select;
 	}
-	return NULL;
+	return text;
 }
 
 
-void printMenu(char title[][10], int count) {
+void printMenu(char title[][20], int count) {
 	printf("=====================================\n");
 	printf("¸Þ´º\n");
 	for (int i = 0; i < count; i++) {
@@ -54,4 +60,16 @@ void printMenu(char title[][10], int count) {
 }
 
 
-void readCustom();
+void readCustom(char* title) {
+	char c_filename[20];
+	FILE *c_file;
+
+	strcpy(c_filename, title);
+	strcat(c_filename, ".txt");
+
+	if (fileExist(c_filename) == -1) exit(0);
+
+	c_file = fopen(c_filename, "r");
+
+	fclose(c_file);
+}

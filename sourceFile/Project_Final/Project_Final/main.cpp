@@ -1,6 +1,3 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
 #include<signal.h>
 #include<time.h>
 #include<thread>
@@ -11,10 +8,14 @@ using namespace std;
 
 int main() {
 	
-	char title[10];
+	
+	char title[20];
+
 	strcpy(title, readTitle());
 
 	printf("%s",title);
+
+	readCustom(title);
 
 	return 0;
 }

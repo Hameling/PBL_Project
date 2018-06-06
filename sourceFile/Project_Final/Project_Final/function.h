@@ -2,10 +2,7 @@
 #ifndef FUNCTION_H
 #define FUNCTION_H
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<Windows.h>
+
 
 #define TITLE_FILE "title.txt"
 
@@ -22,11 +19,9 @@ typedef struct Word_Node {
 }WORD_NODE;
 
 
-int fileExist(char *filename);
+int fileExist(const char *filename);
 char* readTitle();
-void printMenu(char title[][10], int count);
-void readCustom();
-
-
+void printMenu(char title[][20], int count);
+void readCustom(char *title);
 
 #endif
