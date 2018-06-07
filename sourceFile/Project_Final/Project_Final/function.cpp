@@ -8,7 +8,7 @@
 int fileExist(const char *filename) {
 	FILE *file;
 	if ((file = fopen(filename, "r")) == NULL) {
-		printf("파일을 읽는데 문제가 발생했습니다.");
+		printf("파일을 읽는데 문제가 발생했습니다.\n");
 		return -1;
 	}
 	fclose(file);
@@ -72,4 +72,11 @@ void readCustom(char* title) {
 	c_file = fopen(c_filename, "r");
 
 	fclose(c_file);
+}
+
+void gotoxy(int x, int y){
+	COORD Cur;
+	Cur.X = x;
+	Cur.Y = y;
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Cur);
 }

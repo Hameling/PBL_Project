@@ -23,5 +23,6 @@ int fileExist(const char *filename);
 char* readTitle();
 void printMenu(char title[][20], int count);
 void readCustom(char *title);
+void gotoxy(int x, int y);
 
 #endif

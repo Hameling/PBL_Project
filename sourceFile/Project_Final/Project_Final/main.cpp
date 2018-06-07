@@ -7,13 +7,12 @@ using namespace std;
 
 
 int main() {
-	
-	
+
 	char title[20];
 
 	strcpy(title, readTitle());
 
-	printf("%s",title);
+	printf("%s\n",title);
 
 	readCustom(title);
 
