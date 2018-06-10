@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<time.h>
 #include<Windows.h>
 #include"function.h"
 
@@ -74,9 +75,16 @@ void readCustom(char* title) {
 	fclose(c_file);
 }
 
-void gotoxy(int x, int y){
+void gotoxy(int x, int y) {
 	COORD Cur;
 	Cur.X = x;
 	Cur.Y = y;
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Cur);
+}
+
+
+void userInput() {
+	while (hp != 0) {
+		scanf("%s", user_input);
+	}
 }

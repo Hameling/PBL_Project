@@ -19,10 +19,16 @@ typedef struct Word_Node {
 }WORD_NODE;
 
 
+static int hp;
+static char user_input[20];
+static NODE *created;
+
 int fileExist(const char *filename);
 char* readTitle();
 void printMenu(char title[][20], int count);
 void readCustom(char *title);
 void gotoxy(int x, int y);
+
+void userInput();
 
 #endif
