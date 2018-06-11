@@ -88,3 +88,11 @@ void userInput() {
 		scanf("%s", user_input);
 	}
 }
+void gamePlay() {
+	srand(time(NULL));
+	Word_Node wn;
+	strcpy(wn.data, d_set[rand() % 10]);
+
+
+
+}
