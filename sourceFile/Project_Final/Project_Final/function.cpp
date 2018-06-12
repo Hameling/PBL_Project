@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include<time.h>
+#include<conio.h>
 #include<Windows.h>
 #include"function.h"
 
@@ -166,29 +167,109 @@ void inputFieldClear() {
 	printf("                                                  ");
 }
 
+
+char getKey() {
+	if (kbhit()) { return getch(); }
+	return '\0';
+}
+
+
 //노드 갯수에 따른 예외 처리 추가
 void userInput() {
-	WORD_NODE *temp;
+	WORD_NODE *last_pos;
+	WORD_NODE *temp = NULL;
 	int i;
+	int wd_locate = 0;
+	
 	while (hp != 0) {
 		inputFieldClear();
-		gotoxy(14, 25);
-		scanf("%s", user_input);
+		//gotoxy(14, 25);
+		while (1) {
+			user_text = getKey();
+			if (user_text == 13) {
+				break;
+			}else if (user_text == 8) {
+				if (type_pos >= 14) {
+					//화면 출력용
+					gotoxy(type_pos, 25);
+					printf("\b");
+					printf(" ");
+					printf("\b");
+					type_pos--;
+
+					user_input[wd_locate] = '\0';
+					wd_locate--;
+				}
+			}
+			else if (user_text != '\0') {
+				//화면 출력용
+				gotoxy(type_pos,25);
+				printf("%c", user_text);
+				type_pos++;
+				
+				//실제 데이터 입력
+				user_input[wd_locate] = user_text;
+				wd_locate++;
+
+			}
+			
+		}
+		type_pos = 14;
+		wd_locate = 0;
+		user_text = 0;
+
+
+		
+		gotoxy(1, 2);
+		printf("%s", user_input);
+
+		last_pos = Created;
+		mtx.lock();
 		while (Created->previous != NULL) { Created = Created->previous; }
 		
 		//이부분에서 예외가 펑펑 발생
 		while (Created != NULL){
 			if (strcmp(Created->data, user_input) == 0) {
-				temp = Created;
-				Created->previous->next = Created->next;
-				Created->next->previous = Created->previous;
-				gotoxy(temp->pos_x, temp->pos_y);
 
+				temp = Created;
+
+				//해당위치의 노드 삭제
+				gotoxy(temp->pos_x, temp->pos_y);
 				for (i = 0; i <= strlen(temp->data); i++) { printf(" "); }
+
+				//노드가 한개만 존재할 경우
+				if (Created->next == NULL && Created->previous == NULL) {
+					free(temp);
+					Created = NULL;
+					break;
+				
+				}
+				//노드가 첫번째 노드일경우
+				else if (Created->previous == NULL) {
+					Created->next->previous = NULL;
+					
+				}
+				//노드가 마지막 노드일 경우
+				else if (Created->next == NULL) {
+					Created->previous->next = NULL;
+					
+				}
+				//그외 기타 경우
+				else {
+					Created->previous->next = Created->next;
+					Created->next->previous = Created->previous;
+					
+				}
+				
 				free(temp);
+				break;
 			}
 			Created = Created->next;
 		}
+		mtx.unlock();
+		Created = last_pos;
+
+		for (i = 0; i < strlen(user_input); i++) { user_input[i] = '\0'; }
 	}
 }
 void gamePlay() {
@@ -204,7 +285,9 @@ void gamePlay() {
 
 		gotoxy(temp->pos_x, temp->pos_y);
 		printf("%s", temp->data);
-		gotoxy(14, 25);
+		//gotoxy(14, 25);
+
+		mtx.lock();
 		if (Created == NULL) {
 			Created = temp;
 			//head = *temp;
@@ -214,6 +297,7 @@ void gamePlay() {
 			Created->next = temp;
 			temp->previous = Created;
 		}
+		mtx.unlock();
 
 
 		Sleep(sleep_time);
@@ -222,6 +306,7 @@ void gamePlay() {
 		//증가하는 과정에서 y값이 일정값(20)에 도달하면 해당 노드를 삭제하고 체력 감소
 		//strlen 이용하여 문자 지워주기 printf(" ")
 
+		mtx.lock();
 		while (temp->previous != NULL) { temp = temp->previous; }
 
 		while (temp != NULL) {
@@ -231,7 +316,6 @@ void gamePlay() {
 				printHp();
 				gotoxy(temp->pos_x, temp->pos_y - 1);
 				for (i = 0; i <= strlen(temp->data); i++) { printf(" "); }
-				gotoxy(14, 25);
 				temp = temp->next;
 				free(temp->previous);
 				temp->previous = NULL;
@@ -241,10 +325,10 @@ void gamePlay() {
 				for (i = 0; i <= strlen(temp->data); i++) { printf(" "); }
 				gotoxy(temp->pos_x, temp->pos_y);
 				printf("%s", temp->data);
-				gotoxy(14, 25);
 				temp = temp->next;
 			}
 		}
+		mtx.unlock();
 	}
 	
 }

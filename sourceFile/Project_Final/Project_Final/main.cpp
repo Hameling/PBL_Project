@@ -1,7 +1,7 @@
 #include<signal.h>
 #include<time.h>
 #include<thread>
-#include<conio.h>
+
 #include"function.h"
 #include<Windows.h>
 #pragma warning(disable:4996)
