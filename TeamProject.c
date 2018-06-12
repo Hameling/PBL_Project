@@ -3,6 +3,8 @@
 #include<string.h>
 #include<stdlib.h>
 
+
+
 typedef struct Menu {
 	char Title[50];
 	struct Menu *next;
@@ -72,42 +74,36 @@ Node*searchNode(Node_h*LS, char*x) {
 	}
 }
 
-
-int main() {
-	Node_h *LS;
-	Node *p=NULL;
-	Menu * m;
-	Menu * temp = NULL;
-	FILE * fp1;
-	FILE * fp2;
-	FILE * fp3;
-	FILE * menu;
-	int select;
-	char word[10];
+void textfile(Node_h*LS,Node *p,Menu *m,Menu*temp,FILE*fp1,FILE*fp2,FILE*fp3,FILE*menu) {	//텍스트 파일을 출력해주는 함수
+	p = NULL;
+	temp = NULL;
+	
+	char word[100][10];
 	char i[50];
+	char select[20];
 	menu = fopen("title.txt", "r");
 	if (menu == NULL) {
 		printf("파일오픈 실패!!\n");
 	}
 	m = (Menu*)malloc(sizeof(Menu));
 	while (!feof(menu)) {		//menu
-		
+
 		temp = (Menu*)malloc(sizeof(Menu));
 		fgets(i, 50, menu);
-		strcpy(temp->Title,i);
+		strcpy(temp->Title, i);
 		temp->next = m;
 		m = temp;
 		printf("%s\n", m->Title);
 	}
-	printf("1.kor   2.eng  3.c_language\n");
-	scanf("%d", &select);
-	if (select == 1) {		//kor 
-		fp1 = fopen("korean.txt","r");
+	printf("1.korean   2.english  3.c_language\n");
+	scanf("%s", select);
+	if (strcmp(select , "korean")==0) {		//kor 
+		fp1 = fopen("korean.txt", "r");
 		if (fp1 == NULL) {
 			printf("파일오픈 실패!!\n");
 		}
 		while (!feof(fp1)) {
-			fscanf(fp1, "%s",word);
+			fscanf(fp1, "%s", word);
 			LS = createLinkedList_h();
 			p = searchNode(LS, word);
 			insertNode(LS, p, word);
@@ -115,23 +111,23 @@ int main() {
 		}
 		fclose(fp1);
 	}
-	if (select == 2) {		//eng
+	if (strcmp(select, "english") == 0) {		//eng
 		fp2 = fopen("english.txt", "r");
 		if (fp2 == NULL) {
 			printf("파일오픈 실패!!\n");
 		}
-		
+
 		while (!feof(fp2)) {
 			fscanf(fp2, "%s", word);
 			LS = createLinkedList_h();
 			p = searchNode(LS, word);
 			insertNode(LS, p, word);
 			printList(LS); getchar();
-			
+
 		}
 		fclose(fp2);
 	}
-	if (select == 3) {		//c_lang
+	if (strcmp(select, "c_language") == 0) {		//c_lang
 		fp3 = fopen("c_language.txt", "r");
 		if (fp3 == NULL) {
 			printf("파일오픈 실패!!\n");
@@ -147,6 +143,19 @@ int main() {
 		}
 		fclose(fp3);
 	}
+}
+
+int main() {
+	Node_h *LS;
+	Node *p;
+	Menu *m;
+	Menu*temp;
+	FILE*fp1;
+	FILE*fp2;
+	FILE*fp3;
+	FILE*menu;
+	
+	textfile(&LS,&p,&m,&temp,&fp1,&fp2,&fp3,&menu);  //텍스트 파일을 출력해주는 함수
 	
 	return 0;
 }
