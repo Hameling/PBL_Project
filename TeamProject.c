@@ -74,7 +74,18 @@ Node*searchNode(Node_h*LS, char*x) {
 	}
 }
 
-void textfile(Node_h*LS,Node *p,Menu *m,Menu*temp,FILE*fp1,FILE*fp2,FILE*fp3,FILE*menu) {	//텍스트 파일을 출력해주는 함수
+void textfile() {	//텍스트 파일을 출력해주는 함수
+	
+	Node_h *LS;
+	Node *p;
+	Menu *m;
+	Menu*temp;
+	FILE*fp1;
+	FILE*fp2;
+	FILE*fp3;
+	FILE*menu;
+
+	
 	p = NULL;
 	temp = NULL;
 	
@@ -146,16 +157,8 @@ void textfile(Node_h*LS,Node *p,Menu *m,Menu*temp,FILE*fp1,FILE*fp2,FILE*fp3,FIL
 }
 
 int main() {
-	Node_h *LS;
-	Node *p;
-	Menu *m;
-	Menu*temp;
-	FILE*fp1;
-	FILE*fp2;
-	FILE*fp3;
-	FILE*menu;
 	
-	textfile(&LS,&p,&m,&temp,&fp1,&fp2,&fp3,&menu);  //텍스트 파일을 출력해주는 함수
+	textfile();  //텍스트 파일을 출력해주는 함수
 	
 	return 0;
 }
