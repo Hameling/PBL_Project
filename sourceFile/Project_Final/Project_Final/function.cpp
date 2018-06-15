@@ -191,26 +191,30 @@ void userInput() {
 			}else if (user_text == 8) {
 				if (type_pos >= 14) {
 					//화면 출력용
+					mtx.lock();
 					gotoxy(type_pos, 25);
 					printf("\b");
 					printf(" ");
 					printf("\b");
 					type_pos--;
+					mtx.unlock();
 
+					//실제 데이터 적용
 					user_input[wd_locate] = '\0';
 					wd_locate--;
 				}
 			}
 			else if (user_text != '\0') {
 				//화면 출력용
+				mtx.lock();
 				gotoxy(type_pos,25);
 				printf("%c", user_text);
 				type_pos++;
+				mtx.unlock();
 				
 				//실제 데이터 입력
 				user_input[wd_locate] = user_text;
 				wd_locate++;
-
 			}
 			
 		}
@@ -218,13 +222,11 @@ void userInput() {
 		wd_locate = 0;
 		user_text = 0;
 
-
-		
 		gotoxy(1, 2);
 		printf("%s", user_input);
 
-		last_pos = Created;
 		mtx.lock();
+		last_pos = Created;
 		while (Created->previous != NULL) { Created = Created->previous; }
 		
 		//이부분에서 예외가 펑펑 발생
@@ -233,7 +235,7 @@ void userInput() {
 
 				temp = Created;
 
-				//해당위치의 노드 삭제
+				//해당위치의 텍스트 삭제
 				gotoxy(temp->pos_x, temp->pos_y);
 				for (i = 0; i <= strlen(temp->data); i++) { printf(" "); }
 
@@ -241,37 +243,49 @@ void userInput() {
 				if (Created->next == NULL && Created->previous == NULL) {
 					free(temp);
 					Created = NULL;
-					break;
-				
+					last_pos = NULL;
+					break;			
 				}
 				//노드가 첫번째 노드일경우
 				else if (Created->previous == NULL) {
 					Created->next->previous = NULL;
-					
+					Created = Created->next;
+					free(temp);
+					//last_pos = Created;
+					break;
 				}
 				//노드가 마지막 노드일 경우
 				else if (Created->next == NULL) {
 					Created->previous->next = NULL;
-					
+					last_pos = Created->previous;
+					free(temp);
+					break;
 				}
 				//그외 기타 경우
 				else {
 					Created->previous->next = Created->next;
 					Created->next->previous = Created->previous;
-					
+					Created = Created->next;
+					free(temp);
+					break;
 				}
-				
-				free(temp);
-				break;
 			}
 			Created = Created->next;
+			//break;
 		}
-		mtx.unlock();
 		Created = last_pos;
+		int len = strlen(user_input);
+		gotoxy(1, 3);
+		printf("%d", len);
+		for (i = 0; i < len; i++) { user_input[i] = '\0'; }
+		mtx.unlock();
 
-		for (i = 0; i < strlen(user_input); i++) { user_input[i] = '\0'; }
+
+		
 	}
 }
+
+//게임 진행과 관련된 함수
 void gamePlay() {
 	WORD_NODE *temp = NULL;
 	int i;
@@ -296,6 +310,7 @@ void gamePlay() {
 			while (Created->next != NULL) { Created = Created->next; }
 			Created->next = temp;
 			temp->previous = Created;
+			Created = temp;
 		}
 		mtx.unlock();
 
@@ -307,7 +322,10 @@ void gamePlay() {
 		//strlen 이용하여 문자 지워주기 printf(" ")
 
 		mtx.lock();
-		while (temp->previous != NULL) { temp = temp->previous; }
+		temp = Created;
+		if (temp != NULL) {
+			while (temp->previous != NULL) { temp = temp->previous; }
+		}
 
 		while (temp != NULL) {
 			temp->pos_y++;

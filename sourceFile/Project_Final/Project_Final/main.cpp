@@ -13,8 +13,6 @@ int ready_to_game = 0;
 
 int main() {
 	
-	
-	
 	char title[3][20] = { "kor","eng","C_language" };
 	char target_name[20];
 	printf("사용자 이름을 입력해주세요  : ");
@@ -36,14 +34,5 @@ int main() {
 		input.join();
 		play.join();
 	}
-
-	/*char title[20];
-
-	strcpy(title, readTitle());
-
-	printf("%s\n",title);
-
-	readCustom(title);*/
-
 	return 0;
 }
