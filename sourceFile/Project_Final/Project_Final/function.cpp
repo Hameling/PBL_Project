@@ -4,45 +4,48 @@
 #include<time.h>
 #include<conio.h>
 #include<Windows.h>
+
+
 #include"function.h"
 
 
-int fileExist(const char *filename) {
-	FILE *file;
-	if ((file = fopen(filename, "r")) == NULL) {
-		printf("파일을 읽는데 문제가 발생했습니다.\n");
-		return -1;
-	}
-	fclose(file);
-	return 1;
-}
 
-char* readTitle() {
-	FILE *t_file;
-	char title[10][20];
-	int count = 0;
-	char select[10];
-	char text[] = "FILE_IS_EMPTY\n";
+//int fileExist(const char *filename) {
+//	FILE *file;
+//	if ((file = fopen(filename, "r")) == NULL) {
+//		printf("파일을 읽는데 문제가 발생했습니다.\n");
+//		return -1;
+//	}
+//	fclose(file);
+//	return 1;
+//}
 
-	if (fileExist(TITLE_FILE) == -1) exit(0);
-
-	t_file = fopen(TITLE_FILE, "r");
-
-	while (!feof(t_file)) {
-		fscanf(t_file, "%s", title[count]);
-		count++;
-	}
-	fclose(t_file);
-	printMenu(title, count);
-
-
-	printf("메뉴를 선택해주세요.\n>>");
-	scanf("%s", select);
-	for (int i = 0; i < count; i++) {
-		if (!strcmp(title[i], select)) return select;
-	}
-	return text;
-}
+//char* readTitle() {
+//	FILE *t_file;
+//	char title[10][20];
+//	int count = 0;
+//	char select[10];
+//	char text[] = "FILE_IS_EMPTY\n";
+//
+//	if (fileExist(TITLE_FILE) == -1) exit(0);
+//
+//	t_file = fopen(TITLE_FILE, "r");
+//
+//	while (!feof(t_file)) {
+//		fscanf(t_file, "%s", title[count]);
+//		count++;
+//	}
+//	fclose(t_file);
+//	printMenu(title, count);
+//
+//
+//	printf("메뉴를 선택해주세요.\n>>");
+//	scanf("%s", select);
+//	for (int i = 0; i < count; i++) {
+//		if (!strcmp(title[i], select)) return select;
+//	}
+//	return text;
+//}
 
 
 
@@ -91,7 +94,7 @@ char* printMenu(char title[][20], int count) {
 	
 	for (i = 0; i < count; i++) {
 		gotoxy(22, 18 + i);
-		if (!strcmp(title[i], "kor")){
+		/*if (!strcmp(title[i], "kor")){
 			printf(" %d. 한 글\n", i + 1);
 		}
 		else if (!strcmp(title[i], "eng")) {
@@ -99,7 +102,8 @@ char* printMenu(char title[][20], int count) {
 		}
 		else {
 			printf(" %d. %s\n", i + 1, title[i]);
-		}
+		}*/
+		printf(" %d. %s\n", i + 1, title[i]);
 	}
 	gotoxy(22, 18 + count);
 	printf("========================\n");
@@ -137,22 +141,24 @@ void clearMenu(int count) {
 		gotoxy(22, i);
 		printf("                         ");
 	}
+	printHp();
+	printScore();
 	ready_to_game = 1;
 }
 
-void readCustom(char* title) {
-	char c_filename[20];
-	FILE *c_file;
-
-	strcpy(c_filename, title);
-	strcat(c_filename, ".txt");
-
-	if (fileExist(c_filename) == -1) exit(0);
-
-	c_file = fopen(c_filename, "r");
-
-	fclose(c_file);
-}
+//void readCustom(char* title) {
+//	char c_filename[20];
+//	FILE *c_file;
+//
+//	strcpy(c_filename, title);
+//	strcat(c_filename, ".txt");
+//
+//	if (fileExist(c_filename) == -1) exit(0);
+//
+//	c_file = fopen(c_filename, "r");
+//
+//	fclose(c_file);
+//}
 
 void gotoxy(int x, int y) {
 	COORD Cur;
@@ -223,6 +229,7 @@ void userInput() {
 		user_text = 0;
 
 		gotoxy(1, 2);
+		//사용자 입력 확인용
 		printf("%s", user_input);
 
 		mtx.lock();
@@ -232,6 +239,8 @@ void userInput() {
 		//이부분에서 예외가 펑펑 발생
 		while (Created != NULL){
 			if (strcmp(Created->data, user_input) == 0) {
+				score += 1000;
+				printScore();
 
 				temp = Created;
 
@@ -276,8 +285,15 @@ void userInput() {
 		Created = last_pos;
 		int len = strlen(user_input);
 		gotoxy(1, 3);
+		//문자열 길이 확인용
 		printf("%d", len);
-		for (i = 0; i < len; i++) { user_input[i] = '\0'; }
+
+		if (strstr(target_name, "korean") == NULL) {
+			for (i = 0; i < len * 2; i++) { user_input[i] = '\0'; }
+		}
+		else {
+			for (i = 0; i < len; i++) { user_input[i] = '\0'; }
+		}
 		mtx.unlock();
 
 
@@ -289,10 +305,32 @@ void userInput() {
 void gamePlay() {
 	WORD_NODE *temp = NULL;
 	int i;
+	int cource;
 	srand(time(NULL));
 	while (hp != 0) {
+
 		temp = (WORD_NODE*)malloc(sizeof(WORD_NODE));
-		strcpy(temp->data, d_set[rand() % 10]);
+
+		cource = rand() % (data_size / 2);
+		if (cource % 2 == 0) {
+			if (data_list->head->next == NULL) cource++;
+		}
+		else {
+			if (data_list->head->prev == NULL) cource--;
+		}
+
+		for (i = 0; i < cource; i++) {
+			if (cource % 2 == 0) {
+				if (data_list->head->next == NULL)  break; 
+				data_list->head = data_list->head->next;
+			}
+			else {
+				if (data_list->head->prev == NULL)  break; 
+				data_list->head = data_list->head->prev;
+			}
+		}
+		//strcpy(temp->data, d_set[rand() % 10]);
+		strcpy(temp->data, data_list->head->data);
 		temp->pos_x = rand() % (MAX_WIDTH - strlen(temp->data));
 		temp->pos_y = ST_HEIGHT;
 		temp->next = NULL; temp->previous = NULL;
@@ -351,9 +389,12 @@ void gamePlay() {
 	
 }
 
-
-
 void printHp() {
-	gotoxy(1, 1);
+	gotoxy(75, 18);
 	printf("H P : %2d",hp);
+}
+
+void printScore() {
+	gotoxy(73, 19);
+	printf("Score : %6d", score);
 }
