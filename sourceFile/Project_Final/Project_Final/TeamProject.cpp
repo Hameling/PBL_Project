@@ -79,7 +79,9 @@ void readTitle() {
 		exit(0);
 	}
 	while (!feof(menu)) {		//menu
-		fgets(tt, 50, menu);
+		//fget 이용시 엔터까지 입력됨 
+		//fgets(tt, 50, menu);
+		fscanf(menu, "%s", tt);
 		strcpy(title[title_count], tt);
 		title_count++;
 	}
@@ -94,8 +96,11 @@ void readTarget(char target_name[]) {
 	char word[30];
 
 	//fget으로 읽어 오는 과정에서 '\n' 같이 입력되어 삭제
-	target_name[strlen(target_name) - 1] = '\0';
+	//target_name[strlen(target_name) - 1] = '\0';
+
 	strcat(target_name, ".txt");
+
+	//printf("target:%s", target_name);
 
 	target = fopen(target_name, "r");
 	if (target == NULL) {
@@ -114,85 +119,3 @@ void readTarget(char target_name[]) {
 	}
 	fclose(target);
 }
-
-//void textfile() {	//텍스트 파일을 출력해주는 함수
-//	
-//	Node_h *LS;
-//	Node *p;
-//	Menu *m;
-//	Menu*temp;
-//	FILE*fp1;
-//	FILE*fp2;
-//	FILE*fp3;
-//	FILE*menu;
-//
-//	
-//	p = NULL;
-//	temp = NULL;
-//	
-//	char word[30];
-//	char tt[20];
-//	char select[20];
-//	menu = fopen("title.txt", "r");
-//	if (menu == NULL) {
-//		printf("파일오픈 실패!!\n");
-//	}
-//	m = (Menu*)malloc(sizeof(Menu));
-//	while (!feof(menu)) {		//menu
-//
-//		temp = (Menu*)malloc(sizeof(Menu));
-//		fgets(tt, 50, menu);
-//		strcpy(temp->Title, tt);
-//		temp->next = m;
-//		m = temp;
-//		printf("%s\n", m->Title);
-//	}
-//	printf("1.korean   2.english  3.c_language\n");
-//	scanf("%s", select);
-//	if (strcmp(select , "korean")==0) {		//kor 
-//		fp1 = fopen("korean.txt", "r");
-//		if (fp1 == NULL) {
-//			printf("파일오픈 실패!!\n");
-//		}
-//		while (!feof(fp1)) {
-//			fscanf(fp1, "%s", word);
-//			LS = createLinkedList_h();
-//			p = searchNode(LS, word);
-//			insertNode(LS, p, word);
-//			printList(LS); getchar();
-//		}
-//		fclose(fp1);
-//	}
-//	if (strcmp(select, "english") == 0) {		//eng
-//		fp2 = fopen("english.txt", "r");
-//		if (fp2 == NULL) {
-//			printf("파일오픈 실패!!\n");
-//		}
-//
-//		while (!feof(fp2)) {
-//			fscanf(fp2, "%s", word);
-//			LS = createLinkedList_h();
-//			p = searchNode(LS, word);
-//			insertNode(LS, p, word);
-//			printList(LS); getchar();
-//
-//		}
-//		fclose(fp2);
-//	}
-//	if (strcmp(select, "c_language") == 0) {		//c_lang
-//		fp3 = fopen("c_language.txt", "r");
-//		if (fp3 == NULL) {
-//			printf("파일오픈 실패!!\n");
-//		}
-//
-//		while (!feof(fp3)) {
-//			fscanf(fp3, "%s", word);
-//			LS = createLinkedList_h();
-//			p = searchNode(LS, word);
-//			insertNode(LS, p, word);
-//			printList(LS); getchar();
-//
-//		}
-//		fclose(fp3);
-//	}
-//}
