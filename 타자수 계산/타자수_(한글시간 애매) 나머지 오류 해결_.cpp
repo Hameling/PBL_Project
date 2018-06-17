@@ -29,7 +29,7 @@ void english_mode();
 
 #define MAX 512 //문자열 길이를 정의
 
-char text[20] = { "안녕하세요" }; // 이중연결리스트로 변경
+char text[20] = { "abcd" }; // 이중연결리스트로 변경
 int correct = 0;
 
 
