@@ -4,48 +4,11 @@
 #include<time.h>
 #include<conio.h>
 #include<Windows.h>
+
+
 #include"function.h"
 
-
-int fileExist(const char *filename) {
-	FILE *file;
-	if ((file = fopen(filename, "r")) == NULL) {
-		printf("파일을 읽는데 문제가 발생했습니다.\n");
-		return -1;
-	}
-	fclose(file);
-	return 1;
-}
-
-char* readTitle() {
-	FILE *t_file;
-	char title[10][20];
-	int count = 0;
-	char select[10];
-	char text[] = "FILE_IS_EMPTY\n";
-
-	if (fileExist(TITLE_FILE) == -1) exit(0);
-
-	t_file = fopen(TITLE_FILE, "r");
-
-	while (!feof(t_file)) {
-		fscanf(t_file, "%s", title[count]);
-		count++;
-	}
-	fclose(t_file);
-	printMenu(title, count);
-
-
-	printf("메뉴를 선택해주세요.\n>>");
-	scanf("%s", select);
-	for (int i = 0; i < count; i++) {
-		if (!strcmp(title[i], select)) return select;
-	}
-	return text;
-}
-
-
-
+//화면에 CLI를 출력하는 함수
 void printInterface() {
 	printf("『D조』               ●●●●●●●●●●●●                                     \n");
 	printf("                      ● ㅅ ㅏ ㅅ ㅓ ㅂ ㅣ  ●                                 ▲    \n");
@@ -67,7 +30,7 @@ void printInterface() {
 	printf("                                                                                         \n");
 	printf("                                                                                         \n");//점수랑 체력바 출력
 	printf("                                                                                         \n");//선택된 메뉴명 출력
-	printf("                                                                                         \n");//처음에는 사용자 이름 ??? 로 출력??
+	printf("                                                                                         \n");
 	printf("                                                                                         \n");
 	printf("                                                                                         \n");
 	printf("                                                                                         \n");
@@ -78,7 +41,7 @@ void printInterface() {
 
 }
 
-
+//메뉴화면을 출력하고 사용자 입력을 대기하는 함수
 char* printMenu(char title[][20], int count) {
 	int i;
 	int menu;
@@ -89,28 +52,13 @@ char* printMenu(char title[][20], int count) {
 	gotoxy(22, 17);
 	printf("========================\n");
 	
+	//title 문자열 내의 데이터 출력
 	for (i = 0; i < count; i++) {
 		gotoxy(22, 18 + i);
-		if (!strcmp(title[i], "kor")){
-			printf(" %d. 한 글\n", i + 1);
-		}
-		else if (!strcmp(title[i], "eng")) {
-			printf(" %d. 영 어\n", i + 1);
-		}
-		else {
-			printf(" %d. %s\n", i + 1, title[i]);
-		}
+		printf(" %d. %s\n", i + 1, title[i]);
 	}
 	gotoxy(22, 18 + count);
 	printf("========================\n");
-
-	
-	
-	//지금은 간단히 숫자 입력으로
-	//차후 텍스트 및 숫자 입력가능하게
-	/*for (i = 0; i < count; i++) {	
-		if(strcmp(menu, title[i]))
-	}*/
 
 	while (1) {
 		gotoxy(14, 25);
@@ -128,32 +76,24 @@ char* printMenu(char title[][20], int count) {
 			break;
 		}
 	}
+	gotoxy(76, 18);
+	printf("%s", title[menu - 1]);
 	return title[menu - 1];
 }
 
+//메뉴화면을 지우는 함수
 void clearMenu(int count) {
 	int i;
 	for (i = 15; i <= (18 + count); i++) {
 		gotoxy(22, i);
 		printf("                         ");
 	}
+	printHp();
+	printScore();
 	ready_to_game = 1;
 }
 
-void readCustom(char* title) {
-	char c_filename[20];
-	FILE *c_file;
-
-	strcpy(c_filename, title);
-	strcat(c_filename, ".txt");
-
-	if (fileExist(c_filename) == -1) exit(0);
-
-	c_file = fopen(c_filename, "r");
-
-	fclose(c_file);
-}
-
+//콘솔 상의 특정 xy좌표로 이동하는 함수
 void gotoxy(int x, int y) {
 	COORD Cur;
 	Cur.X = x;
@@ -161,79 +101,95 @@ void gotoxy(int x, int y) {
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Cur);
 }
 
+//입력필드를 지우는 함수
 void inputFieldClear() {
 	//코드 보완 필요
 	gotoxy(14, 25);
 	printf("                                                  ");
 }
 
-
+//사용자로부터 입력받은 키를 반환하는 함수
 char getKey() {
 	if (kbhit()) { return getch(); }
 	return '\0';
 }
 
-
-//노드 갯수에 따른 예외 처리 추가
+//사용자의 입력을 기다리는 함수
 void userInput() {
 	WORD_NODE *last_pos;
 	WORD_NODE *temp = NULL;
 	int i;
 	int wd_locate = 0;
+	int len;
 	
 	while (hp != 0) {
 		inputFieldClear();
-		//gotoxy(14, 25);
+		//사용자로부터 입력받은 값을 저장하고 화면에 출력하는 부분
 		while (1) {
+			mtx.lock();
 			user_text = getKey();
+			mtx.unlock();
+			//엔터 입력시
 			if (user_text == 13) {
 				break;
+			//백스페이스 입력시
 			}else if (user_text == 8) {
 				if (type_pos >= 14) {
 					//화면 출력용
+					mtx.lock();
 					gotoxy(type_pos, 25);
 					printf("\b");
 					printf(" ");
 					printf("\b");
 					type_pos--;
+					mtx.unlock();
 
+					//실제 데이터 적용
 					user_input[wd_locate] = '\0';
 					wd_locate--;
 				}
 			}
+			//영문자 이외의 것 입력시
 			else if (user_text != '\0') {
 				//화면 출력용
+				mtx.lock();
 				gotoxy(type_pos,25);
 				printf("%c", user_text);
 				type_pos++;
+				mtx.unlock();
 				
 				//실제 데이터 입력
 				user_input[wd_locate] = user_text;
 				wd_locate++;
-
 			}
 			
 		}
+		//사용된 변수 초기화
 		type_pos = 14;
 		wd_locate = 0;
 		user_text = 0;
 
+		//차후 삭제
+		//사용자 입력 확인용
+		/*gotoxy(1, 2);
+		printf("%s", user_input);*/
 
-		
-		gotoxy(1, 2);
-		printf("%s", user_input);
-
-		last_pos = Created;
 		mtx.lock();
+		//사용자의 입력과 글자 노드의 데이터를 비교하여 같다면 삭제하는 부분
+		last_pos = Created;
 		while (Created->previous != NULL) { Created = Created->previous; }
 		
-		//이부분에서 예외가 펑펑 발생
 		while (Created != NULL){
 			if (strcmp(Created->data, user_input) == 0) {
+				//점수 계산 및 출력부
+				score += (1000 + (combo * 100));
+				combo++;
+				printScore();
+				printCombo();
 
 				temp = Created;
 
-				//해당위치의 노드 삭제
+				//해당위치의 텍스트 삭제
 				gotoxy(temp->pos_x, temp->pos_y);
 				for (i = 0; i <= strlen(temp->data); i++) { printf(" "); }
 
@@ -241,79 +197,123 @@ void userInput() {
 				if (Created->next == NULL && Created->previous == NULL) {
 					free(temp);
 					Created = NULL;
-					break;
-				
+					last_pos = NULL;
+					break;			
 				}
 				//노드가 첫번째 노드일경우
 				else if (Created->previous == NULL) {
 					Created->next->previous = NULL;
-					
+					Created = Created->next;
+					free(temp);
+					//last_pos = Created;
+					break;
 				}
 				//노드가 마지막 노드일 경우
 				else if (Created->next == NULL) {
 					Created->previous->next = NULL;
-					
+					last_pos = Created->previous;
+					free(temp);
+					break;
 				}
 				//그외 기타 경우
 				else {
 					Created->previous->next = Created->next;
 					Created->next->previous = Created->previous;
-					
+					Created = Created->next;
+					free(temp);
+					break;
 				}
-				
-				free(temp);
-				break;
 			}
 			Created = Created->next;
+			//break;
+		}
+		Created = last_pos;
+		////차후삭제
+		////문자열 길이 확인용
+		//gotoxy(1, 3);
+		//printf("%d", len);
+
+		//문자열을 길이에 맞게 비워줌
+		len = strlen(user_input);
+		if (strstr(target_name, "korean") == NULL) {
+			for (i = 0; i < len * 2; i++) { user_input[i] = '\0'; }
+		}
+		else {
+			for (i = 0; i < len; i++) { user_input[i] = '\0'; }
 		}
 		mtx.unlock();
-		Created = last_pos;
 
-		for (i = 0; i < strlen(user_input); i++) { user_input[i] = '\0'; }
 	}
 }
+
+//게임 진행과 관련된 함수
 void gamePlay() {
 	WORD_NODE *temp = NULL;
 	int i;
+	int cource;
 	srand(time(NULL));
 	while (hp != 0) {
+
+		//읽어온 데이터를 바탕으로 이중연결리스트를 생성하는 기능
 		temp = (WORD_NODE*)malloc(sizeof(WORD_NODE));
-		strcpy(temp->data, d_set[rand() % 10]);
+		cource = rand() % (data_size / 2);
+		if (cource % 2 == 0) {
+			if (data_list->head->next == NULL) cource++;
+		}
+		else {
+			if (data_list->head->prev == NULL) cource--;
+		}
+
+		//난수로 생성된 값이 짝수냐 홀수냐에 따라 이동방향 결정
+		for (i = 0; i < cource; i++) {
+			if (cource % 2 == 0) {
+				if (data_list->head->next == NULL)  break; 
+				data_list->head = data_list->head->next;
+			}
+			else {
+				if (data_list->head->prev == NULL)  break; 
+				data_list->head = data_list->head->prev;
+			}
+		}
+		strcpy(temp->data, data_list->head->data);
 		temp->pos_x = rand() % (MAX_WIDTH - strlen(temp->data));
 		temp->pos_y = ST_HEIGHT;
 		temp->next = NULL; temp->previous = NULL;
 
+		//해당 노드가 배정된 위치에 문자열 출력
 		gotoxy(temp->pos_x, temp->pos_y);
 		printf("%s", temp->data);
-		//gotoxy(14, 25);
 
+		//
 		mtx.lock();
 		if (Created == NULL) {
 			Created = temp;
-			//head = *temp;
 		}
 		else {
 			while (Created->next != NULL) { Created = Created->next; }
 			Created->next = temp;
 			temp->previous = Created;
+			Created = temp;
 		}
 		mtx.unlock();
 
-
+		//난이도 조정을 위한 Sleep함수
 		Sleep(sleep_time);
 
-		//연결리스트의 pos_y를 1씩 증가 + 화면 갱신(이건 별도의 함수로?)
-		//증가하는 과정에서 y값이 일정값(20)에 도달하면 해당 노드를 삭제하고 체력 감소
-		//strlen 이용하여 문자 지워주기 printf(" ")
-
+		//노드의 위치정보를 y축으로 1씩 더해주는 기능
 		mtx.lock();
-		while (temp->previous != NULL) { temp = temp->previous; }
+		temp = Created;
+		if (temp != NULL) {
+			while (temp->previous != NULL) { temp = temp->previous; }
+		}
 
 		while (temp != NULL) {
 			temp->pos_y++;
 			if (temp->pos_y == MAX_HEIGHT) {
 				hp -= 10;
+				combo = 0;
 				printHp();
+				printCombo();
 				gotoxy(temp->pos_x, temp->pos_y - 1);
 				for (i = 0; i <= strlen(temp->data); i++) { printf(" "); }
 				temp = temp->next;
@@ -333,9 +333,22 @@ void gamePlay() {
 	
 }
 
-
-
+//사용자의 현재 체력을 출력해주는 기능
 void printHp() {
-	gotoxy(1, 1);
+	gotoxy(75, 19);
 	printf("H P : %2d",hp);
+	
+}
+
+//사용자의 현재 점수을 출력해주는 기능
+void printScore() {
+	gotoxy(73, 20);
+	printf("Score : %6d", score);
+	if (score != 0 && score % 5000 == 0 && sleep_time > 0) { sleep_time -= 100; }
+}
+
+//사용자의 콤보수를 표시하는 함수
+void printCombo() {
+	gotoxy(77, 21);
+	printf("%d combo", combo);
 }
