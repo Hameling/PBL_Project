@@ -97,7 +97,6 @@ double english_gettext()
 			else len = 0;// 길이가 같고 생긴것도 같을경우 correct를 하나 증가시킴
 		}
 	}
-	printf("\n%d\n", correct);
 	arr = 60 / total_time.count() * len; //시간에서 입력한 타자수를 곱함
 	return arr;//분당 타자수
 
@@ -288,7 +287,11 @@ void korea_mode() // 한글 모드
 		avg += korea_gettext();
 		i++;
 	}
-	printf("최종 분당 타자수는 : %f 입니다.\n", avg / correct);
+
+	printf("%d", correct);
+
+	if (correct == 0) printf("최종 분당 타자수는 : 0 입니다.\n");
+	else printf("최종 분당 타자수는 : %f 입니다.\n", avg / correct);
 }
 
 void english_mode() // 영어 모드
@@ -300,5 +303,6 @@ void english_mode() // 영어 모드
 		avg = avg + english_gettext();
 		i++;
 	}
+	if (correct == 0) printf("최종 분당 타자수는 : 0 입니다.\n");
 	printf("최종 분당 타자수는 : %f 입니다.\n", avg / correct);
 }
