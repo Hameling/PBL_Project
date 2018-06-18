@@ -80,6 +80,8 @@ char* printMenu(char title[][20], int count) {
 	}
 	gotoxy(76, 18);
 	printf("%s", title[menu - 1]);
+	gotoxy(0, 27);
+	printf("                                                     ");
 	return title[menu - 1];
 }
 
@@ -373,7 +375,7 @@ void printCombo() {
 
 //사용자의 타자수를 출력해주는 함수
 void printTypeCount() {
-	gotoxy(75, 22);
+	gotoxy(73, 22);
 	printf("타자수 : %.2f ", tp_count);
 }
 
@@ -384,4 +386,5 @@ void gameover() {
 	printf("게임이 종료되었습니다.\n");
 	printf("%s님의 점수 : %d점\n",user_name, score);
 	printf("%s님의 평균타자수 : %.2f타\n", user_name, tp_result / (double)tp_ct);
+	system("pause");
 }
