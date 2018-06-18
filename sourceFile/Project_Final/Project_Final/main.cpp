@@ -45,7 +45,6 @@ int main() {
 		input.join();
 		play.join();
 	}
-	system("cls");
-	printf("gameover!!\n");
+	gameover();
 	return 0;
 }

@@ -8,7 +8,7 @@ typedef struct Menu {
 }Menu;
 
 typedef struct Node {
-	char data[30];
+	char data[20];
 	struct Node *next;
 	struct Node *prev;
 }Node;
