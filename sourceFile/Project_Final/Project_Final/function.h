@@ -48,6 +48,11 @@ static char user_text;
 static int sleep_time = 1000;
 static WORD_NODE *Created = NULL;
 
+//타이핑 수 출력 변수
+static double tp_count = 0;
+//타이핑 결과값 출력 변수
+static double tp_result = 0;
+static int tp_ct = 0;
 
 //쓰레드 자원공유 문제 해결용
 static std::mutex mtx;
@@ -67,8 +72,13 @@ char getKey();
 //게임진행관련
 void userInput();
 void gamePlay();
+
+//게임 Info 출력 함수
 void printHp();
 void printScore();
 void printCombo();
+void printTypeCount();
+
+void gameover();
 
 #endif

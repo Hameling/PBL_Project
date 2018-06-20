@@ -22,10 +22,12 @@
     <ClCompile Include="function.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="TeamProject.cpp" />
+    <ClCompile Include="typing_speed.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="function.h" />
     <ClInclude Include="TeamProject.h" />
+    <ClInclude Include="typing_speed.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
